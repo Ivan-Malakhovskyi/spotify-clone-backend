@@ -3,8 +3,11 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Post,
+  Req,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UpdateResult } from 'typeorm';
@@ -15,10 +18,12 @@ import { User } from 'src/users/user.entity';
 import { UserService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
 import { LoginUserDTO } from './dto/login-user.dto';
-import { JwtAuthGuard } from './jwt-guard';
+import { JwtAuthGuard } from './guards/jwt-guard';
 import { Enable2FAAuth } from './types';
 import { RequestUser } from 'src/users/types';
 import { ValidateTokenDTO } from './dto/validate-token.dto';
+import { GoogleOAuthGuard } from './guards/google-o-auth.guard';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -41,10 +46,28 @@ export class AuthController {
     return this.authService.login(loginDTO);
   }
 
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async auth() {}
+
   @Get('enable-2fa')
   @UseGuards(JwtAuthGuard)
   enable2fa(@Request() req: { user: RequestUser }): Promise<Enable2FAAuth> {
     return this.authService.enableTwoFAAuth(req.user.userId);
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuthCallback(@Req() req, @Res() res: Response) {
+    const token = await this.authService.login(req.user);
+
+    res.cookie('access_token', token, {
+      maxAge: 2592000000,
+      sameSite: true,
+      secure: true,
+    });
+
+    return res.status(HttpStatus.OK);
   }
 
   @Post('validate-2fa')
@@ -72,10 +95,14 @@ export class AuthController {
   getProfile(@Request() req: { user: User }) {
     const { password, ...rest } = req.user;
 
-    console.log('DELETE PASSWORD', password);
     return {
       msg: 'Auth wit API KEY',
       user: rest,
     };
+  }
+
+  @Get('env')
+  getEnv() {
+    return this.authService.getEnv();
   }
 }

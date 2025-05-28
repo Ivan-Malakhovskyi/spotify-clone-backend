@@ -8,6 +8,7 @@ import { UserService } from 'src/users/users.service';
 import { Enable2FAAuth, PayloadType } from './types';
 import { UpdateResult } from 'typeorm';
 import { User } from 'src/users/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private artistsService: ArtistsService,
+    private configService: ConfigService,
   ) {}
   async login(
     loginDTO: LoginUserDTO,
@@ -109,5 +111,23 @@ export class AuthService {
 
   async validateUserByApiKey(apiKey: string): Promise<User> {
     return this.userService.findByApiKey(apiKey);
+  }
+
+  getEnv() {
+    const port = this.configService.get<number>('port');
+    const secret = this.configService.get<string>('secret');
+    const DB_NAME = this.configService.get<string>('dbName');
+    const USER = this.configService.get<string>('USER');
+    const DB_PORT = this.configService.get<number>('dbPort');
+    const DB_HOST = this.configService.get<string>('host');
+
+    return {
+      port,
+      secret,
+      DB_HOST,
+      DB_PORT,
+      DB_NAME,
+      USER,
+    };
   }
 }

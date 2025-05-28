@@ -23,7 +23,7 @@ import { SongsService } from './songs.service';
 import { CreateSongDTO } from './dto/create-song.dto';
 import { Song } from './song.entity';
 import { UpdateSongDTO } from './dto/update-song-dto';
-import { JwtAuthGuard } from 'src/auth/jwt-guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-guard';
 import { RequestUser } from 'src/users/types';
 
 @Controller('songs')

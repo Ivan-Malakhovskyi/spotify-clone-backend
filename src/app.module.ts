@@ -1,10 +1,10 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
 import { LoggerMiddleware } from './common/middleware/logger/logger.middleware';
 import { DevConfigService } from './providers/DevConfigService';
-import 'dotenv/config';
 
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
@@ -15,9 +15,11 @@ import { PhotoModule } from './playlist/playlist.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ArtistsModule } from './artists/artists.module';
-import { dataSourceOptions } from 'db/data-source';
+import { typeOrmAsyncConfig } from 'db/data-source';
 import { SeedService } from './seed/seed.service';
 import { SeedModule } from './seed/seed.module';
+import configuration from './config/configuration';
+import { validate } from 'env.validation';
 
 const devConfig = {
   port: 3000,
@@ -29,7 +31,13 @@ const prodConfig = {
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSourceOptions),
+    ConfigModule.forRoot({
+      envFilePath: ['.env.development.local', '.env.production.local'],
+      isGlobal: true,
+      load: [configuration],
+      validate: validate,
+    }),
+    TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
     CatsModule,
     SongsModule,
     AuthModule,
