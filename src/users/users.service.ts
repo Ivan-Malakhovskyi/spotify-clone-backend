@@ -16,6 +16,7 @@ export class UserService {
   ) {}
 
   async createUser(userDTO: CreateUserDTO): Promise<Omit<User, 'password'>> {
+    console.log('userDTO', userDTO);
     const user = new User();
     user.firstName = userDTO.firstName;
     user.lastName = userDTO.lastName;
@@ -39,6 +40,17 @@ export class UserService {
     if (!user) {
       throw new UnauthorizedException('User was not found 🥲');
     }
+    return user;
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOneBy({ email });
+
+    console.log('USER', user);
+    if (!user) {
+      throw new UnauthorizedException('User was not found 🥲');
+    }
+
     return user;
   }
 

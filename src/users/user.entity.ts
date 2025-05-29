@@ -29,6 +29,11 @@ export class User {
   @Column({ nullable: true })
   apiKey: string;
 
+  @Column({ nullable: true })
+  avatarUrl?: string;
+
+  @Column({ default: 'local' })
+  provider: string;
   /**
    * A user can create many playLists
    */

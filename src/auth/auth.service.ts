@@ -23,6 +23,7 @@ export class AuthService {
   ): Promise<
     { accessToken: string } | { validate2FA: string; message: string }
   > {
+    console.log(loginDTO);
     const user = await this.userService.findOne(loginDTO);
 
     const isPasswordUserMatched = await bcryptjs.compare(
@@ -130,4 +131,35 @@ export class AuthService {
       USER,
     };
   }
+
+  async validateGoogleUser(googleUserDto: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string;
+  }) {
+    let user = await this.userService.findByEmail({
+      email: googleUserDto.email,
+    });
+
+    if (!user) {
+      user = this.userRepository.create({
+        ...googleUserDto,
+        provider: 'google',
+      });
+
+      await this.userRepository.save(user);
+    }
+
+    return user;
+  }
+
+  // async validateGoogleUser(googleUser: any) {
+  //   console.log('googleUser', googleUser);
+  //   const user = await this.userService.findByEmail(googleUser.email);
+
+  //   if (user) return user;
+
+  //   return await this.userService.createUser(googleUser);
+  // }
 }

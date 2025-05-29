@@ -8,11 +8,19 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { ArtistsModule } from 'src/artists/artists.module';
 import { ApiKeyStrategy } from './strategies/api-key-strategy';
+// import { GoogleStrategy } from './strategies/google.strategy';
+
+import googleOAuthConfig from 'src/config/google-o-auth.config';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/users/user.entity';
 
 @Module({
   imports: [
+    ConfigModule.forFeature(googleOAuthConfig),
     UsersModule,
     ArtistsModule,
+    TypeOrmModule.forFeature([User]),
 
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -24,7 +32,7 @@ import { ApiKeyStrategy } from './strategies/api-key-strategy';
     }),
   ],
 
-  providers: [AuthService, JwtStrategy, ApiKeyStrategy],
+  providers: [AuthService, JwtStrategy, ApiKeyStrategy, GoogleStrategy],
   controllers: [AuthController],
   exports: [AuthService], //! provide opportunity import that module in any other module
 })

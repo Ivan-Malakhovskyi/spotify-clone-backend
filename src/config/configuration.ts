@@ -6,7 +6,4 @@ export default () => ({
   dbUser: process.env.DB_USER,
   password: process.env.PASSWORD,
   dbName: process.env.DB_NAME,
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  redirectUrl: process.env.REDIRECT_URL,
 });

@@ -23,7 +23,6 @@ import { Enable2FAAuth } from './types';
 import { RequestUser } from 'src/users/types';
 import { ValidateTokenDTO } from './dto/validate-token.dto';
 import { GoogleOAuthGuard } from './guards/google-o-auth.guard';
-import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -46,28 +45,25 @@ export class AuthController {
     return this.authService.login(loginDTO);
   }
 
+  // @Public()
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async auth() {}
+  async googleAuth() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  @HttpCode(200)
+  async googleAuthCallback(@Req() req: any, @Res() res) {
+    console.log('req.USER', req);
+    const resp = await this.authService.login(req.user);
+    console.log(resp);
+    return res.redirect(`http:localhost:3001${resp.user.accessToken}`);
+  }
 
   @Get('enable-2fa')
   @UseGuards(JwtAuthGuard)
   enable2fa(@Request() req: { user: RequestUser }): Promise<Enable2FAAuth> {
     return this.authService.enableTwoFAAuth(req.user.userId);
-  }
-
-  @Get('google/callback')
-  @UseGuards(GoogleOAuthGuard)
-  async googleAuthCallback(@Req() req, @Res() res: Response) {
-    const token = await this.authService.login(req.user);
-
-    res.cookie('access_token', token, {
-      maxAge: 2592000000,
-      sameSite: true,
-      secure: true,
-    });
-
-    return res.status(HttpStatus.OK);
   }
 
   @Post('validate-2fa')

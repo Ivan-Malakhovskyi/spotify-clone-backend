@@ -1,23 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Strategy, VerifyCallback } from 'passport-google-oauth2';
-import { User } from 'src/users/user.entity';
-import { Repository } from 'typeorm';
-import config from '../../config/configuration';
+import googleOAuthConfig from 'src/config/google-o-auth.config';
+import { AuthService } from '../auth.service';
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class GoogleStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @Inject() private configService: ConfigType<typeof config>,
-
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @Inject(googleOAuthConfig.KEY)
+    private googleConfiguration: ConfigType<typeof googleOAuthConfig>,
+    private authService: AuthService,
   ) {
     super({
-      clientID: configService.clientId!,
-      clientSecret: configService.clientSecret!,
-      callbackURL: configService.redirectUrl!,
+      clientID: googleConfiguration.clientId!,
+      clientSecret: googleConfiguration.clientSecret!,
+      callbackURL: googleConfiguration.redirectUrl!,
       scope: ['profile', 'email'],
     });
   }
@@ -30,9 +28,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ): Promise<any> {
     console.log(profile);
 
-    //   const user = {
-    //       provider: 'google',
-    //       providerId
-    //   }
+    const user = this.authService.validateGoogleUser({
+      email: profile.emails[0].value,
+      firstName: profile.name.givenName,
+      lastName: profile.name.familyName,
+      avatarUrl: profile.photos[0].value,
+      // password: '',
+    });
+
+    done(null, user);
   }
 }
